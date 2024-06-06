@@ -1,0 +1,74 @@
+[
+    {
+        "_id": "0",
+        "name": "Surender Agrawal",
+        "gender": "Male",
+        "address": "HDD 39, Kabir Nagar, Raipur, CG",
+        "pincode": "492099",
+        "gotra": "Mittal",
+        "dob": "02/10/1971",
+        "phone": "+918085774295",
+        "marital_status": "Married",
+        "marital_information": {
+            "marriage_date": "12/12/1997"
+        },
+        "relationships": [
+          {
+            "relation_type": "SPOUSE",
+            "related_user_id": "2"
+          },
+          {
+            "relation_type": "CHILDREN",
+            "related_user_id": ["1", "3"]
+          }
+        ]
+    },
+    {
+        "_id": "1",
+        "name": "Dipak Agrawal",
+        "gender": "Male",
+        "address": "HDD 39, Kabir Nagar, Raipur, CG",
+        "pincode": "492099",
+        "gotra": "Mittal",
+        "dob": "19/10/1998",
+        "phone": "+919981394554",
+        "marital_status": "Single",
+        "relationships": []
+    },
+    {
+        "_id": "2",
+        "name": "Mamta Devi Agrawal",
+        "gender": "Female",
+        "address": "HDD 39, Kabir Nagar, Raipur, CG",
+        "pincode": "492099",
+        "gotra": "Mittal",
+        "dob": "09/11/1979",
+        "phone": "+919301917381",
+        "marital_status": "Married",
+        "marital_information": {
+            "marriage_date": "12/12/1997"
+        },
+        "relationships": [
+            {
+              "relation_type": "SPOUSE",
+              "related_user_id": "0"
+            },
+            {
+              "relation_type": "CHILDREN",
+              "related_user_id": ["1", "3"]
+            }
+          ]
+    },
+    {
+        "_id": "3",
+        "name": "Yatish Agrawal",
+        "gender": "Male",
+        "address": "HDD 39, Kabir Nagar, Raipur, CG",
+        "pincode": "492099",
+        "gotra": "Mittal",
+        "dob": "23/04/2000",
+        "phone": "+917014348617",
+        "marital_status": "Single",
+        "relationships": []
+    }
+]
