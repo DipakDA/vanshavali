@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baniya Vansavali</title>
+    <title>Narnolia Vanshavali</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://balkan.app/FamilyTreeJS/css/tree.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container">
         <header class="header">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Baniya Vansavali Logo" class="logo">
-            <h1>Baniya Vansavali</h1>
+            <h1>Narnolia Vanshavali</h1>
         </header>
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'CreateUser')">Create User</button>
             <button class="tablinks" onclick="openTab(event, 'ViewUserProfile')">View User Profile</button>
+            <button class="tablinks" onclick="openTab(event, 'ManageRelationships')">Manage Relationships</button>
             <button class="tablinks" onclick="openTab(event, 'FamilyTree')">Family Tree</button>
         </div>
 
@@ -90,7 +93,35 @@
         <div id="FamilyTree" class="tabcontent">
             <h2>Family Tree</h2>
             <div id="familyTreeContainer" style="width: 100%; height: 800px;"></div>
-        </div>        
+        </div>
+        
+        <div id="ManageRelationships" class="tabcontent">
+            <h2>Manage Relationships</h2>
+            <form id="manageRelationshipsForm">
+                <label for="userSelect">Select User:</label>
+                <select id="userSelectForRelations" name="userSelectForRelations">
+                    <!-- Options will be populated here -->
+                </select>
+                
+                <label for="relationType">Relation Type:</label>
+                <select id="relationType" name="relationType">
+                    <option value="SPOUSE">Spouse</option>
+                    <option value="PARENT">Parent</option>
+                    <option value="CHILD">Child</option>
+                </select>
+        
+                <label for="relatedUser">Related User:</label>
+                <select id="relatedUser" name="relatedUser">
+                    <!-- Options will be populated here -->
+                </select>
+        
+                <input type="submit" value="Add Relationship">
+            </form>
+            <div id="relationSuccessAlert" class="alert">
+                <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                &#x2714; Relationship successfully added!
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>

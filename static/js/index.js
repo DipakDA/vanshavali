@@ -168,3 +168,58 @@ function disableSubmitButton() {
     submitButton.disabled = true;
     submitButton.classList.add('disabled');
 }
+
+// Populate user dropdowns
+async function populateUserDropdowns() {
+    const response = await fetch('/users');
+    const users = await response.json();
+    const userSelect = document.getElementById('userSelectForRelations');
+    const relatedUserSelect = document.getElementById('relatedUser');
+
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user._id; // Use the user ID as the value
+        option.textContent = user.name;
+        userSelect.appendChild(option);
+
+        const relatedOption = document.createElement('option');
+        relatedOption.value = user._id; // Use the user ID as the value
+        relatedOption.textContent = user.name;
+        relatedUserSelect.appendChild(relatedOption);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    populateUserDropdowns();
+});
+
+document.getElementById('manageRelationshipsForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const userId = document.getElementById('userSelectForRelations').value;
+    const relationType = document.getElementById('relationType').value;
+    const relatedUserId = document.getElementById('relatedUser').value;
+
+    if (userId && relationType && relatedUserId) {
+        const response = await fetch('/add_relationship', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                relation_type: relationType,
+                related_user_id: relatedUserId
+            })
+        });
+
+        if (response.ok) {
+            document.getElementById('relationSuccessAlert').style.display = 'block';
+            this.reset(); // Reset form fields
+        } else {
+            alert('Failed to add relationship');
+        }
+    } else {
+        alert('Please fill in all fields.');
+    }
+});
