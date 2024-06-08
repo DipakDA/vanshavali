@@ -83,18 +83,36 @@ def convert_objectid_to_str(data):
 
 @app.route('/user/<name>')
 def get_user_details(name):
-    user = collection.find_one({'name': name}, {'_id': 0})
+    user = collection.find_one({'name': name})
     if user:
         convert_objectid_to_str(user)  # Convert ObjectId to string
+        user['relationships'] = get_user_relationships(user['_id'])
         return jsonify(user)
     else:
         return jsonify({'error': 'User not found'}), 404
+
+def get_user_relationships(user_id):
+    logger.info(f"Fetching relationships for user_id: {user_id}")
+    user = collection.find_one({"_id": ObjectId(user_id)}, {"relationships": 1})
+    relationships = user.get("relationships", [])
+    for relationship in relationships:
+        related_user = collection.find_one({"_id": ObjectId(relationship['related_user_id'])}, {"name": 1})
+        relationship['related_user_id'] = str(relationship['related_user_id'])  # Convert ObjectId to string
+        relationship['related_user_name'] = related_user['name'] if related_user else "Unknown"
+        convert_objectid_to_str(relationship)
+        logger.info(f"Processed relationship: {relationship}")
+
+    logger.info(f"Total relationships fetched: {len(relationships)}")
+    logger.info(f"All relationships: {relationships}")
+    return relationships
+
     
 @app.route('/get_user/<user_id>', methods=['GET'])
 def get_user(user_id):
     user = collection.find_one({"_id": ObjectId(user_id)})
     if user:
         user['_id'] = str(user['_id'])  # Convert ObjectId to string
+        convert_objectid_to_str(user)
         return jsonify(user), 200
     else:
         return jsonify({'error': 'User not found'}), 404
@@ -105,7 +123,8 @@ def get_hometown(pincode):
     if pin_data:
         city = pin_data[0]['Name']
         district = pin_data[0]['District']
-        hometown = f"{city}, {district}"
+        state = pin_data[0]['State']
+        hometown = f"{city}, {district}, {state}"
     else:
         hometown = "Unknown Location"
     return jsonify({'city': hometown})

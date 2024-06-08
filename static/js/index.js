@@ -44,6 +44,12 @@ document.getElementById('userSelect').addEventListener('change', async function 
         if (response.ok) {
             const user = await response.json();
             const userProfile = document.getElementById('userProfile');
+            let relationshipsHTML = '';
+
+            user.relationships.forEach(rel => {
+                relationshipsHTML += `<p><strong>${rel.relation_type}:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${rel.related_user_name}</a></p>`;
+            });
+
             userProfile.innerHTML = `
                 <h3>${user.name}</h3>
                 <img src="data:image/png;base64,${user.photo}" alt="User Photo" width="100" height="100">
@@ -55,7 +61,23 @@ document.getElementById('userSelect').addEventListener('change', async function 
                 <p><strong>Date of Birth:</strong> ${user.dob}</p>
                 <p><strong>Phone:</strong> ${user.phone}</p>
                 <p><strong>Marital Status:</strong> ${user.marital_status}</p>
+                ${relationshipsHTML}
             `;
+
+            document.querySelectorAll('.related-user').forEach(link => {
+                link.addEventListener('click', async function (event) {
+                    event.preventDefault();
+                    const relatedUserId = this.dataset.id;
+                    const relatedResponse = await fetch(`/get_user/${relatedUserId}`);
+                    if (relatedResponse.ok) {
+                        const relatedUser = await relatedResponse.json();
+                        document.getElementById('userSelect').value = relatedUser.name;
+                        document.getElementById('userSelect').dispatchEvent(new Event('change'));
+                    } else {
+                        alert('Failed to fetch related user details');
+                    }
+                });
+            });
         } else {
             alert('Failed to fetch user details');
         }
@@ -63,6 +85,9 @@ document.getElementById('userSelect').addEventListener('change', async function 
         document.getElementById('userProfile').innerHTML = '';
     }
 });
+
+
+
 
 // Handle form submission
 document.getElementById('createUserForm').addEventListener('submit', async function (event) {
@@ -191,6 +216,28 @@ async function populateUserDropdowns() {
 
 document.addEventListener('DOMContentLoaded', function() {
     populateUserDropdowns();
+
+    const userSelect = document.getElementById('userSelectForRelations');
+    const relationTypeSelect = document.getElementById('relationType');
+    const relatedUserSelect = document.getElementById('relatedUser');
+    const confirmationLine = document.getElementById('confirmationLine');
+
+    const updateConfirmationLine = () => {
+        const user = userSelect.options[userSelect.selectedIndex].text;
+        const relationType = relationTypeSelect.options[relationTypeSelect.selectedIndex].text;
+        const relatedUser = relatedUserSelect.options[relatedUserSelect.selectedIndex].text;
+
+        if (userSelect.value && relationTypeSelect.value && relatedUserSelect.value) {
+            confirmationLine.textContent = `${relatedUser} is the ${relationType} of ${user}`;
+            confirmationLine.style.display = 'block';
+        } else {
+            confirmationLine.style.display = 'none';
+        }
+    };
+
+    userSelect.addEventListener('change', updateConfirmationLine);
+    relationTypeSelect.addEventListener('change', updateConfirmationLine);
+    relatedUserSelect.addEventListener('change', updateConfirmationLine);
 });
 
 document.getElementById('manageRelationshipsForm').addEventListener('submit', async function (event) {
