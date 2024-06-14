@@ -1,0 +1,34 @@
+{
+  "name": "vansavali",
+  "version": "1.0.0",
+  "description": "Command to SSH to host -> ssh -i \"access-key.pem\" ec2-user@ec2-43-205-129-137.ap-south-1.compute.amazonaws.com",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DipakDA/vanshavali.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DipakDA/vanshavali/issues"
+  },
+  "homepage": "https://github.com/DipakDA/vanshavali#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "bson": "^6.7.0",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "india-pincode-search": "^1.0.2",
+    "indian-cities-json": "^2.0.0",
+    "mongoose": "^8.4.1"
+  }
+}

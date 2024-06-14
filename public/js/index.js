@@ -136,12 +136,16 @@ document.getElementById('pincode').addEventListener('input', async function () {
     const pincode = this.value;
     if (pincode.length === 6) {
         const response = await fetch(`/pincode/${pincode}`);
+        console.log(response);
         if (response.ok) {
-            const data = await response.json();
-            document.getElementById('hometown').value = data.city;
+            const data = await response.text();
+            document.getElementById('hometown').value = data;
+        } else {
+            document.getElementById('hometown').value = 'Unknown Pincode';
         }
     }
 });
+
 
 // Resize image function
 async function resizeImage(file, width, height) {
