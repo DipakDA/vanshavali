@@ -46,9 +46,20 @@ document.getElementById('userSelect').addEventListener('change', async function 
             const userProfile = document.getElementById('userProfile');
             let relationshipsHTML = '';
 
-            user.relationships.forEach(rel => {
-                relationshipsHTML += `<p><strong>${rel.relation_type}:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${rel.related_user_name}</a></p>`;
+            // Create an array of promises for fetching related user names
+            const relationshipPromises = user.relationships.map(async rel => {
+                let related_user_name = rel.related_user_name;
+                if (!related_user_name) {
+                    let relatedUser = await fetch(`/getUserById/${rel.related_user_id}`);
+                    relatedUser = await relatedUser.json();
+                    related_user_name = relatedUser.name;
+                }
+
+                relationshipsHTML += `<p><strong>${rel.relation_type}:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${related_user_name}</a></p>`;
             });
+
+            // Wait for all promises to complete
+            await Promise.all(relationshipPromises);
 
             userProfile.innerHTML = `
                 <h3>${user.name}</h3>
@@ -68,7 +79,7 @@ document.getElementById('userSelect').addEventListener('change', async function 
                 link.addEventListener('click', async function (event) {
                     event.preventDefault();
                     const relatedUserId = this.dataset.id;
-                    const relatedResponse = await fetch(`/get_user/${relatedUserId}`);
+                    const relatedResponse = await fetch(`/getUserById/${relatedUserId}`);
                     if (relatedResponse.ok) {
                         const relatedUser = await relatedResponse.json();
                         document.getElementById('userSelect').value = relatedUser.name;
@@ -136,7 +147,6 @@ document.getElementById('pincode').addEventListener('input', async function () {
     const pincode = this.value;
     if (pincode.length === 6) {
         const response = await fetch(`/pincode/${pincode}`);
-        console.log(response);
         if (response.ok) {
             const data = await response.text();
             document.getElementById('hometown').value = data;

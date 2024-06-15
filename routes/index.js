@@ -45,6 +45,16 @@ router.get('/user/:name', async (req, res) => {
     }
 });
 
+// GET route for fetching a user by id
+router.get('/getUserById/:id', async (req, res) => {
+    const user = await User.findOne({ _id: req.params.id });
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404).send('User not found');
+    }
+});
+
 // POST route for adding a new user
 router.post('/add', async (req, res) => {
     const user = new User(req.body);
