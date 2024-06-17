@@ -36,7 +36,6 @@ async function fetchUsers() {
     });
 }
 
-// Fetch user details and populate the profile
 document.getElementById('userSelect').addEventListener('change', async function () {
     const selectedUser = this.value;
     if (selectedUser) {
@@ -44,7 +43,12 @@ document.getElementById('userSelect').addEventListener('change', async function 
         if (response.ok) {
             const user = await response.json();
             const userProfile = document.getElementById('userProfile');
-            let relationshipsHTML = '';
+            let relationshipsHTML = {
+                parents: '',
+                siblings: '',
+                children: '',
+                spouse: ''
+            };
 
             // Create an array of promises for fetching related user names
             const relationshipPromises = user.relationships.map(async rel => {
@@ -55,11 +59,29 @@ document.getElementById('userSelect').addEventListener('change', async function 
                     related_user_name = relatedUser.name;
                 }
 
-                relationshipsHTML += `<p><strong>${rel.relation_type}:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${related_user_name}</a></p>`;
+                switch (rel.relation_type) {
+                    case 'PARENT':
+                        relationshipsHTML.parents += `<p><strong>PARENT:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${related_user_name}</a></p>`;
+                        break;
+                    case 'SIBLING':
+                        relationshipsHTML.siblings += `<p><strong>SIBLING:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${related_user_name}</a></p>`;
+                        break;
+                    case 'CHILD':
+                        relationshipsHTML.children += `<p><strong>CHILD:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${related_user_name}</a></p>`;
+                        break;
+                    case 'SPOUSE':
+                        relationshipsHTML.spouse += `<p><strong>SPOUSE:</strong> <a href="#" class="related-user" data-id="${rel.related_user_id}">${related_user_name}</a></p>`;
+                        break;
+                }
             });
 
             // Wait for all promises to complete
             await Promise.all(relationshipPromises);
+
+            // Compute and display implicit relationships
+            const implicitRelationshipsHTML = await computeImplicitRelationships(user);
+            relationshipsHTML.parents += implicitRelationshipsHTML.parents;
+            relationshipsHTML.siblings += implicitRelationshipsHTML.siblings;
 
             userProfile.innerHTML = `
                 <h3>${user.name}</h3>
@@ -72,7 +94,10 @@ document.getElementById('userSelect').addEventListener('change', async function 
                 <p><strong>Date of Birth:</strong> ${user.dob}</p>
                 <p><strong>Phone:</strong> ${user.phone}</p>
                 <p><strong>Marital Status:</strong> ${user.marital_status}</p>
-                ${relationshipsHTML}
+                ${relationshipsHTML.parents}
+                ${relationshipsHTML.spouse}
+                ${relationshipsHTML.siblings}
+                ${relationshipsHTML.children}
             `;
 
             document.querySelectorAll('.related-user').forEach(link => {
@@ -97,8 +122,71 @@ document.getElementById('userSelect').addEventListener('change', async function 
     }
 });
 
+async function computeImplicitRelationships(user) {
+    let implicitRelationshipsHTML = {
+        parents: '',
+        siblings: '',
+        children: '',
+        spouse: ''
+    };
 
+    // Fetch all users to find relationships
+    const usersResponse = await fetch('/users');
+    const users = await usersResponse.json();
 
+    // Find implicit siblings based on common parents
+    const siblings = new Set();
+    user.relationships.forEach(rel => {
+        if (rel.relation_type === 'PARENT') {
+            users.forEach(otherUser => {
+                if (otherUser._id !== user._id) {
+                    otherUser.relationships.forEach(otherRel => {
+                        if (otherRel.relation_type === 'PARENT' && otherRel.related_user_id === rel.related_user_id) {
+                            siblings.add(otherUser);
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    // Add siblings to the relationships HTML
+    if (siblings.size > 0) {
+        siblings.forEach(sibling => {
+            implicitRelationshipsHTML.siblings += `<p><strong>SIBLING:</strong> <a href="#" class="related-user" data-id="${sibling._id}">${sibling.name}</a></p>`;
+        });
+    }
+
+    // Find implicit parents and their spouses
+    const parents = new Set();
+    const parentPromises = user.relationships
+        .filter(rel => rel.relation_type === 'PARENT')
+        .map(async rel => {
+            let parent = await fetch(`/getUserById/${rel.related_user_id}`);
+            parent = await parent.json();
+
+            // Find the spouse of the parent
+            const spouseRel = parent.relationships.find(r => r.relation_type === 'SPOUSE');
+            if (spouseRel) {
+                let spouse = await fetch(`/getUserById/${spouseRel.related_user_id}`);
+                spouse = await spouse.json();
+                // Check if spouse is already in parents set
+                if (!Array.from(parents).some(p => p._id === spouse._id)) {
+                    parents.add(spouse);
+                }
+            }
+        });
+
+    // Wait for all parent promises to complete
+    await Promise.all(parentPromises);
+
+    // Add parents to the relationships HTML
+    parents.forEach(parent => {
+        implicitRelationshipsHTML.parents += `<p><strong>PARENT:</strong> <a href="#" class="related-user" data-id="${parent._id}">${parent.name}</a></p>`;
+    });
+
+    return implicitRelationshipsHTML;
+}
 
 // Handle form submission
 document.getElementById('createUserForm').addEventListener('submit', async function (event) {
