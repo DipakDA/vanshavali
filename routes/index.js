@@ -75,7 +75,28 @@ router.post('/add_relationship', async (req, res) => {
             related_user_name: relatedUser.name
         });
 
+        // Add reciprocal relationship
+        let reciprocalRelationType = '';
+        if (relation_type === 'PARENT') {
+            reciprocalRelationType = 'CHILD';
+        } else if (relation_type === 'CHILD') {
+            reciprocalRelationType = 'PARENT';
+        } else if (relation_type === 'SPOUSE') {
+            reciprocalRelationType = 'SPOUSE';
+        }
+
+        // Add reciprocal relationship to the related user
+        if (reciprocalRelationType) {
+            relatedUser.relationships.push({
+                relation_type: reciprocalRelationType,
+                related_user_id: user._id,
+                related_user_name: user.name
+            });
+        }
+
         await user.save();
+        await relatedUser.save();
+
         res.send('Relationship added successfully');
     } else {
         res.status(404).send('User or related user not found');
