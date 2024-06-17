@@ -7,7 +7,9 @@ const indexRoutes = require('./routes/index.js');
 const app = express();
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/familyTreeDB', { useNewUrlParser: true });
+mongoose.connect('mongodb://localhost:27017/familyTreeDB', { useNewUrlParser: true })
+.then(() => console.log('MongoDB connected'))
+.catch((err) => console.log('MongoDB connection error:', err));;
 
 // Middleware
 app.use(bodyParser.json());
