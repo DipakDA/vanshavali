@@ -43,6 +43,10 @@ document.getElementById('userSelect').addEventListener('change', async function 
         if (response.ok) {
             const user = await response.json();
             const userProfile = document.getElementById('userProfile');
+            const editButton = document.getElementById('editButton');
+            const editControls = document.getElementById('editControls');
+            const saveButton = document.getElementById('saveButton');
+            const cancelButton = document.getElementById('cancelButton');
             let relationshipsHTML = {
                 parents: '',
                 siblings: '',
@@ -86,19 +90,81 @@ document.getElementById('userSelect').addEventListener('change', async function 
             userProfile.innerHTML = `
                 <h3>${user.name}</h3>
                 <img src="data:image/png;base64,${user.photo}" alt="User Photo" width="100" height="100">
-                <p><strong>Gender:</strong> ${user.gender}</p>
-                <p><strong>Address:</strong> ${user.address}</p>
-                <p><strong>Pincode:</strong> ${user.pincode}</p>
-                <p><strong>Hometown:</strong> ${user.hometown}</p>
-                <p><strong>Gotra:</strong> ${user.gotra}</p>
-                <p><strong>Date of Birth:</strong> ${user.dob}</p>
-                <p><strong>Phone:</strong> ${user.phone}</p>
-                <p><strong>Marital Status:</strong> ${user.marital_status}</p>
+                <p><strong>Gender:</strong> <span id="gender" class="editable" contenteditable="false">${user.gender}</span></p>
+                <p><strong>Address:</strong> <span class="editable" contenteditable="false">${user.address}</span></p>
+                <p><strong>Pincode:</strong> <span class="editable" contenteditable="false">${user.pincode}</span></p>
+                <p><strong>Hometown:</strong> <span class="editable" contenteditable="false">${user.hometown}</span></p>
+                <p><strong>Gotra:</strong> <span class="editable" contenteditable="false">${user.gotra}</span></p>
+                <p><strong>Date of Birth:</strong> <span class="editable" contenteditable="false">${user.dob}</span></p>
+                <p><strong>Phone:</strong> <span class="editable" contenteditable="false">${user.phone}</span></p>
+                <p><strong>Marital Status:</strong> <span class="editable" contenteditable="false">${user.marital_status}</span></p>
                 ${relationshipsHTML.parents}
                 ${relationshipsHTML.spouse}
                 ${relationshipsHTML.siblings}
                 ${relationshipsHTML.children}
             `;
+
+            editButton.style.display = 'block';
+            editControls.style.display = 'none';
+
+            editButton.onclick = () => {
+                document.querySelectorAll('.editable').forEach(element => {
+                    element.contentEditable = 'true';
+                    element.style.backgroundColor = '#f0f8ff';
+                    element.style.border = '1px solid #d3d3d3';
+                    element.style.padding = '2px';
+                });
+                editButton.style.display = 'none';
+                editControls.style.display = 'block';
+            };
+            
+            cancelButton.onclick = () => {
+                document.querySelectorAll('.editable').forEach(element => {
+                    element.contentEditable = 'false';
+                    element.style.backgroundColor = 'transparent';
+                    element.style.border = 'none';
+                });
+                editButton.style.display = 'block';
+                editControls.style.display = 'none';
+                document.getElementById('userSelect').dispatchEvent(new Event('change')); // Reset the profile view
+            };
+            
+            saveButton.onclick = async () => {
+                const updatedUser = {
+                    name: user.name,
+                    gender: userProfile.querySelectorAll('.editable')[0].textContent,
+                    address: userProfile.querySelectorAll('.editable')[1].textContent,
+                    pincode: userProfile.querySelectorAll('.editable')[2].textContent,
+                    hometown: userProfile.querySelectorAll('.editable')[3].textContent,
+                    gotra: userProfile.querySelectorAll('.editable')[4].textContent,
+                    dob: userProfile.querySelectorAll('.editable')[5].textContent,
+                    phone: userProfile.querySelectorAll('.editable')[6].textContent,
+                    marital_status: userProfile.querySelectorAll('.editable')[7].textContent
+                };
+            
+                const response = await fetch(`/user/${user._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedUser)
+                });
+            
+                if (response.ok) {
+                    alert('User updated successfully');
+                    document.querySelectorAll('.editable').forEach(element => {
+                        element.contentEditable = 'false';
+                        element.style.backgroundColor = 'transparent';
+                        element.style.border = 'none';
+                    });
+                    const genderSpan = document.getElementById('gender');
+                    genderSpan.innerHTML = genderSpan.querySelector('select').value;
+                    editButton.style.display = 'block';
+                    editControls.style.display = 'none';
+                } else {
+                    alert('Failed to update user');
+                }
+            };                       
 
             document.querySelectorAll('.related-user').forEach(link => {
                 link.addEventListener('click', async function (event) {
@@ -119,6 +185,8 @@ document.getElementById('userSelect').addEventListener('change', async function 
         }
     } else {
         document.getElementById('userProfile').innerHTML = '';
+        document.getElementById('editButton').style.display = 'none';
+        document.getElementById('editControls').style.display = 'none';
     }
 });
 

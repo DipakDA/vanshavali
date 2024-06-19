@@ -128,4 +128,15 @@ router.get('/pincode/:pincode', async (req, res) => {
     }
 });
 
+// PUT route for updating a user
+router.put('/user/:id', async (req, res) => {
+    const updatedUser = req.body;
+    try {
+        await User.findByIdAndUpdate(req.params.id, updatedUser);
+        res.send('User updated successfully');
+    } catch (error) {
+        res.status(500).send('Error updating user');
+    }
+});
+
 module.exports = router;
